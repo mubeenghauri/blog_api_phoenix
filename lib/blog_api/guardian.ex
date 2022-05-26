@@ -4,7 +4,7 @@ defmodule BlogApi.Guardian do
 	require Logger
 
 	@moduledoc"""
-		JWT Authentication handler.
+		JWT Authentication handler. Will be using user's id as subject for all guarded requets
 	"""
 
 	@doc"""
@@ -21,8 +21,8 @@ defmodule BlogApi.Guardian do
 	end
 
 	def resource_from_claims(%{"sub" => id}) do
-		resource = BlogApi.get_resource_by_id(id)
-		{:ok, resource}
+		user = BlogApi.User.by(id: id)
+		{:ok, user}
 	end
 
 	def resource_from_claim(_, _) do
