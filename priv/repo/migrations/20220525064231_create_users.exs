@@ -4,7 +4,7 @@ defmodule BlogApi.Repo.Migrations.CreateUsers do
   def up do
     create table(:users) do
       add :name, :string
-      # add :email, :string
+      add :email, :string
       add :password, :string
 
       timestamps()
