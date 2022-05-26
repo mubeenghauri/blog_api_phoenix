@@ -32,10 +32,18 @@ defmodule BlogApiWeb.UserController do
     else
       # validation error tuple, returned by User.validate_changeset/1
 			{:errors, errors} -> render(conn, "errors.json", errors: errors)
+
+      {:error, %Ecto.Changeset{} = error} ->
+        # when Repo fails, it gives {:error, CHangeset} tuple, handling that here
+        Logger.error error
+        {:errors, errors} = User.validate_changeset(error)
+        render(conn, "errors.json", errors: errors)
+
       {:error, error} ->
         Logger.error error
         render(conn, "error.json", msg: "failed creating user. Reason: #{Atom.to_string(error)}")
-    end
+
+      end
   end
 
   def update(conn,  params) do
