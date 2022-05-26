@@ -12,8 +12,7 @@ defmodule BlogApiWeb.AuthController do
   plug :put_view, BlogApiWeb.UserView
 
 
-
-  def authenitcate(conn, %{email: email, password: password}) do
+  def authenticate(conn, %{"email" => email, "password" => password}) do
     Logger.info "[Authenticate] Validating user with email : #{email}"
     # user = User.get_by_email()
     # case user do
@@ -23,12 +22,13 @@ defmodule BlogApiWeb.AuthController do
     #   %User{} ->
     # end
 
-    with {:ok, user} <- User.get_by_email(email: email),
+    with {:ok, user} <- User.by( email: email ),
          {:valid, user} <- User.verify_password(user, password),
          {:ok, token, _claim} <- Guardian.encode_and_sign(user) do
           # {:authenticated, token}
           render(conn, "jwt.json", jwt: token)
       else
+        # {:error, :invalid_password} ->
         {:error, _error} ->
           render(conn, "error.json", msg: "invalid credentials")
     end
