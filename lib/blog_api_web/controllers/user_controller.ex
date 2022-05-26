@@ -26,7 +26,6 @@ defmodule BlogApiWeb.UserController do
          {:ok, token, _claims} <- Guardian.encode_and_sign(user)  do
           IO.inspect(user)
           IO.inspect(token)
-          IO.inspect(_claims)
           # render(conn, "ok.json", msg: "user added successfully")
           render(conn, "jwt.json", jwt: token)
     else
