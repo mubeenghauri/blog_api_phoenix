@@ -1,5 +1,7 @@
 defmodule BlogApiWeb.UserView do
 
+	use BlogApiWeb.View
+
 		def render("user.json", %{user: [name, email] =  _user}) do
 			%{
 				"data" => %{
@@ -15,18 +17,6 @@ defmodule BlogApiWeb.UserView do
 				end )
 			}
     end
-
-		def render("ok.json", %{msg: msg}) do
-			%{"status" => 200, "message" => msg}
-		end
-
-		def render("errors.json", %{errors: errors}) do
-			%{"status" => 400, "errors" => errors}
-		end
-
-		def render("error.json", %{msg: msg}) do
-			%{"status" => 500, "error" => msg}
-		end
 
 		def render("jwt.json", %{jwt: jwt}) do
 			%{"token" => jwt}
