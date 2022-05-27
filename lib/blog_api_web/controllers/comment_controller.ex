@@ -42,4 +42,33 @@ defmodule BlogApiWeb.CommentController do
     end
   end
 
+  def update(conn, %{"user_id" => poster_id, "post_id" => post_id, "id" => comment_id, "content" => content }) do
+    case Post.is_valid(%{user_id: poster_id, post_id: post_id}) do
+      true ->
+        try do
+          Comment.update( [id: comment_id, post_id: post_id, user_id: poster_id], %{content: content} )
+        rescue
+          render(conn, "error.json", msg: "failed updating comment")
+        end
+
+      false ->
+        render(conn, "error.json", msg: "failed updating comment. invalid post")
+
+    end
+  end
+
+  def delete(conn, %{"user_id" => poster_id, "post_id" => post_id, "id" => comment_id) do
+    case Post.is_valid(%{user_id: poster_id, post_id: post_id}) do
+      true ->
+        try do
+          Comment.delete([id: comment_id, post_id: post_id, user_id: poster_id])
+        rescue
+          render(conn, "error.json", msg: "failed updating comment.")
+        end
+
+      false ->
+        render(conn, "error.json", msg: "failed updating comment. invalid post")
+    end
+  end
+
 end

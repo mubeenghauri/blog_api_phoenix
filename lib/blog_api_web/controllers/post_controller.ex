@@ -30,8 +30,7 @@ defmodule BlogApiWeb.PostController do
     render conn, "paginate.json", paginated: paginated_post
   end
 
-  def create(conn, %{"user_id" => _user_id,
-                     "title" => _title, "content" => _content} = param) do
+  def create(conn, %{"user_id" => _user_id, "title" => _title, "content" => _content} = param) do
 
     with {:ok, changeset} <- {:ok, Post.creation_changeset(%Post{}, param)},
          {:ok, changeset} <- Repo.validate_changeset(changeset),
