@@ -1,7 +1,7 @@
 defmodule BlogApiWeb.UserController do
 	require Logger
   use BlogApiWeb, :controller
-  alias BlogApi.{Repo, User, Guardian}
+  alias BlogApi.{Repo, User, Guardian, Paginator}
 	import Ecto.Query, only: [from: 2]
 
   @doc"""
@@ -16,12 +16,22 @@ defmodule BlogApiWeb.UserController do
 		render conn, "users.json", users: users
   end
 
+  def paginated(conn, %{"page" => page}) do
+		users =
+	  	from u in "users", select: [u.id, u.name, u.email]
+    {page, _} = Integer.parse(page)
+    paginated_users = Paginator.paginate(users, page)
+
+		IO.inspect(paginated_users)
+		render conn, "paginate.json", paginated: paginated_users
+  end
+
   @spec create(Plug.Conn.t(), map) :: Plug.Conn.t()
   def create(conn, %{"name" => name, "email" => email, "password" => password}) do
     IO.puts("Insert ==> #{name} #{email}")
 
-    with {:ok, changeset} <- {:ok, User.changeset( %User{}, %{"name" => name, "email" => email, "password" => password}) },
-				 {:ok, ^changeset} <- User.validate_changeset(changeset),
+    with {:ok, changeset} <- {:ok, User.creation_changeset( %User{}, %{"name" => name, "email" => email, "password" => password}) },
+				 {:ok, ^changeset} <- Repo.validate_changeset(changeset),
 				 {:ok, user} <- Repo.insert(changeset),
          {:ok, token, _claims} <- Guardian.encode_and_sign(user)  do
           IO.inspect(user)
@@ -35,7 +45,7 @@ defmodule BlogApiWeb.UserController do
       {:error, %Ecto.Changeset{} = error} ->
         # when Repo fails, it gives {:error, CHangeset} tuple, handling that here
         Logger.error error
-        {:errors, errors} = User.validate_changeset(error)
+        {:errors, errors} = Repo.validate_changeset(error)
         render(conn, "errors.json", errors: errors)
 
       {:error, error} ->
