@@ -31,4 +31,28 @@ defmodule PostSeeds do
 
 end
 
-PostSeeds.main
+defmodule CommenSeeds do
+  alias BlogApi.{Post, Repo, Comment}
+	import Ecto.Query, only: [from: 2]
+
+  def main do
+    user_ids = Repo.all( from u in BlogApi.User, select: u.id)
+    post_ids = Repo.all( from p in BlogApi.Post, select: p.id)
+
+    for user_id <- user_ids do
+      for post_id <- post_ids do
+        Repo.insert!(
+          %Comment{
+            content: "This is comment from user: #{user_id} on post #{post_id}",
+            user_id: user_id,
+            post_id: post_id
+          }
+        )
+      end
+    end
+  end
+
+end
+
+# PostSeeds.main
+CommenSeeds.main
