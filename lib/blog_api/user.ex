@@ -7,6 +7,7 @@ defmodule BlogApi.User do
   # for password hashing, and validation.
   import Comeonin.Bcrypt, only: [hashpwsalt: 1, checkpw: 2]
 
+  @derive {Jason.Encoder, only: [:id, :name, :email]}
   schema "users" do
     field :email, :string
     field :name, :string
