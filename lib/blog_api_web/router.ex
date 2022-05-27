@@ -5,10 +5,27 @@ defmodule BlogApiWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :jwt_auth do
+    plug BlogApi.Guardian.AuthPipeline
+  end
+
   scope "/api", BlogApiWeb do
     pipe_through :api
 
-    resources "/users", UserController, only: [:index, :show, :create, :update, :delete] 
+    post "/signin", AuthController, :authenticate
+  end
+
+  scope "/api", BlogApiWeb do
+    pipe_through [:api, :jwt_auth]
+
+    # paginated routes
+    get "/users/page/:page", UserController, :paginated
+    get "/posts/page/:page", PostController, :paginated
+
+    resources "/users", UserController, only: [:index, :show, :create, :update, :delete] do
+      resources "/posts", PostController, only: [:index, :show, :create, :update, :delete]
+    end
+
   end
 
   # Enables LiveDashboard only for development
