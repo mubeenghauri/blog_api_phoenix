@@ -1,17 +1,20 @@
 defmodule BlogApi.User do
   use Ecto.Schema
-  import Ecto.Changeset
-
-  # for password hashing.
-  import Comeonin.Bcrypt, only: [hashpwsalt: 1]
-
   require Logger
+  import Ecto.Changeset
+  alias BlogApi.{User, Post}
+
+  # for password hashing, and validation.
+  import Comeonin.Bcrypt, only: [hashpwsalt: 1, checkpw: 2]
 
   schema "users" do
     field :email, :string
     field :name, :string
     field :password_hash, :string
     field :password, :string, virtual: true
+
+    has_many :posts, {"posts", Post}, foreign_key: :user_id
+
     timestamps()
   end
 
@@ -59,35 +62,32 @@ defmodule BlogApi.User do
       end
   end
 
-  defp is_valid_changeset?(changeset) do
-    %{valid?: valid} = changeset
-    valid
+
+  @doc """
+   Generic function to get user by any number of attributes.
+   Main purpose for this is to get verbose response in case of
+   error, i.e error:reason tuple
+  """
+  def by( attr ) do
+    user =
+      User
+      |> BlogApi.Repo.get_by( attr )
+
+      case user do
+        nil ->
+          {:error, :nouser}
+        %BlogApi.User{} ->
+          {:ok, user}
+      end
   end
 
-  @spec validate_changeset(%{:valid? => any, optional(any) => any}) ::
-          {:errors, any} | {:ok, %{:valid? => any, optional(any) => any}}
-  def validate_changeset(changeset) do
-    case is_valid_changeset?(changeset) do
-      true ->
-        {:ok, changeset}
-      false ->
-        {:errors, changeset_error_to_string(changeset)}
+  def verify_password(%User{} = user, password) do
+    if checkpw(password, user.password_hash) do
+      {:valid, user}
+    else
+      {:error, :invalid_password}
     end
   end
 
-  # @spec changeset_error_to_string(Ecto.Changeset.t()) :: Map.t()
-  def changeset_error_to_string(changeset) do
-    Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
-      Enum.reduce(opts, msg, fn {key, value}, acc ->
-        String.replace(acc, "%{#{key}}", to_string(value))
-      end)
-    end)
-    |> Enum.reduce("", fn {k, v}, acc ->
-      joined_errors = Enum.join(v, "; ")
-      "#{acc}#{k}: #{joined_errors}\n"
-    end)
-  end
-
-  def get_by_email(%{email: email})
 
 end
