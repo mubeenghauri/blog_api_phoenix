@@ -9,3 +9,26 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
+
+
+defmodule PostSeeds do
+
+  alias BlogApi.{Post, Repo}
+
+  def main do
+    for user_id <-[1, 5, 6]  do
+      for i <- 1..20  do
+        Repo.insert!(
+          %Post{
+            title: "My Post #{i}",
+            content: "This is post #{i} for user #{user_id}",
+            user_id: user_id
+          }
+        )
+      end
+    end
+  end
+
+end
+
+PostSeeds.main
