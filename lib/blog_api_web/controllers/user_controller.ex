@@ -16,6 +16,14 @@ defmodule BlogApiWeb.UserController do
 		render conn, "users.json", users: users
   end
 
+  def all_users(conn, _params) do
+    users = User.all_with_posts()
+
+		IO.inspect(users)
+		render(conn, "index.html", %{ name: "Joe", users: users})
+
+  end
+
   def paginated(conn, %{"page" => page}) do
 		users =
 	  	from u in "users", select: [u.id, u.name, u.email]
