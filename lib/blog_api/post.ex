@@ -7,7 +7,7 @@ defmodule BlogApi.Post do
 
 
   # note to self: adding the suffix 'a' gives a list of atom
-  @required_registration_fields ~w(content title user_id)a
+  @required_creation_fields ~w(content title user_id)a
 
   @derive {Jason.Encoder, only: [:id, :title, :content, :user]}
   schema "posts" do
@@ -16,6 +16,7 @@ defmodule BlogApi.Post do
     field :user_id, :integer
 
     belongs_to :user, User, define_field: :false
+    has_many :comments, {"comments", Coment}, foreign_key: :post_id # the key in comments table which refrences a post
 
     timestamps()
   end
@@ -24,7 +25,7 @@ defmodule BlogApi.Post do
   def creation_changeset(post, attrs) do
     post
     |> cast(attrs, [:content, :title, :user_id])
-    |> validate_required(@required_registration_fields)
+    |> validate_required(@required_creation_fields)
     |> validate_length(:content, min: 8)
     |> validate_length(:title, min: 8)
   end
@@ -100,6 +101,18 @@ defmodule BlogApi.Post do
 
         :error
     end
+  end
+
+  def is_valid(%{post_id: post_id, user_id: user_id}) do
+    query =
+      from p in Post,
+      where: p.id == ^post_id,
+      where: p.user_id == ^user_id,
+      select: count("*")
+    [count | _] = Repo.all query
+    Logger.debug "[Post] is_valid count: #{count}"
+    # Logger.debug count
+    count > 0
   end
 
   # defp get_by(queryable, clauses, opts \\ []) do

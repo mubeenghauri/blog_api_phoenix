@@ -23,7 +23,9 @@ defmodule BlogApiWeb.Router do
     get "/posts/page/:page", PostController, :paginated
 
     resources "/users", UserController, only: [:index, :show, :create, :update, :delete] do
-      resources "/posts", PostController, only: [:index, :show, :create, :update, :delete]
+      resources "/posts", PostController, only: [:index, :show, :create, :update, :delete] do
+        resources "/comments", CommentController, [:index, :show, :create, :update, :delete]
+      end
     end
 
   end
