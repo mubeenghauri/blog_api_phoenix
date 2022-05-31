@@ -24,6 +24,7 @@ defmodule BlogApi.Paginator do
       if result_count > 0, do:
         ( total_entries - (length(result) + offset) ),
       else: 0
+
     has_next = remaining > 0
 
     %{
@@ -46,6 +47,7 @@ defmodule BlogApi.Paginator do
         |> Ecto.Query.exclude(:select)
         # removing unecessary things to improve query time
         |> Ecto.Query.exclude(:preload)
+        # |> IO.inspect
         |> Ecto.Query.exclude(:order_by)
         # |> exclude(:where) # lets keep the where in query
         |> Ecto.Query.select(count("*"))

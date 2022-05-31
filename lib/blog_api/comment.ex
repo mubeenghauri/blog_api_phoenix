@@ -2,7 +2,7 @@ defmodule BlogApi.Comment do
   require Logger
   use Ecto.Schema
   import Ecto.Changeset
-  alias BlogApi.{User, Post, Repo}
+  alias BlogApi.{User, Post, Repo, Comment}
 	import Ecto.Query, only: [from: 2]
 
 
@@ -62,6 +62,19 @@ defmodule BlogApi.Comment do
     query_with_where
     |> Repo.all
 
+  end
+
+  def update(where, update_clause) do
+    Comment
+    |> Repo.get_by(where)
+    |> Comment.changeset(update_clause)
+    |> Repo.update
+  end
+
+  def delete(where) do
+    Comment
+    |> Repo.get_by!(where)
+    |> Repo.delete!()
   end
 
 

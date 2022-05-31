@@ -1,0 +1,87 @@
+<section class="phx-hero">
+  <p class="alert alert-info" role="alert"
+    phx-click="lv:clear-flash"
+    phx-value-key="info"><%= live_flash(@flash, :info) %></p>
+  
+
+  <p class="alert alert-danger" role="alert"
+    phx-click="lv:clear-flash"
+    phx-value-key="error"><%= live_flash(@flash, :error) %></p>
+
+  <p> <%= title() %> calls: <%= @live_calls %> </p>
+
+</section>
+
+
+<section class="row">
+
+  <div class="container">
+    <section class="row" >
+        <table>
+        <thead>
+          <tr> 
+            <th> Name </th>
+            <th> Email </th>
+            <th> # of POsts </th>
+          </tr>
+        </thead>
+        <tbody>
+          <%= for user <- @users do %>
+
+            <tr id={"user:#{user.id}"}>
+              <td> <%= user.name %> </td>
+              <td> <%= user.email %> </td>
+              <td> <a href={Routes.path(@socket, user_post_link(user.id))}  > <%= length(user.posts) %> </a> </td>
+            </tr>
+
+          <% end %>
+        </tbody>
+      </table>
+    </section>
+    </div>
+
+
+
+    <div class="column">
+      <div>
+        <div phx-click={Phoenix.LiveView.JS.push("inc", value: %{count: @count})} >
+          Counter using bindings
+        </div>
+
+        <div>
+          Count: <%= @count %> 
+        </div>
+      </div>
+    </div>
+
+</section>
+
+<section>
+<center> Chat Channel </center>
+
+<div class="container"> 
+<div id="messages" role="log" aria-live="polite"></div>
+<input id="chat-input" type="text">
+</div>
+
+</section>
+
+
+<script>
+  console.log("Hello from jS");
+
+  /**
+   * Handler for event fired by server when a user's post is updated.
+   * Highlights the updated user's row in yellow.
+   * After 2 sec
+   */
+  window.addEventListener("phx:user-updated", e => {
+    console.log("[*] Handling event, ", e);
+    document.getElementById(`user:${e.detail.userid}`).style.backgroundColor = "yellow";
+    setTimeout( () => {
+      console.log("[*] Resetting background color");
+      document.getElementById(`user:${e.detail.userid}`).style.backgroundColor = "white";
+    }, 2000);
+  })
+
+</script>

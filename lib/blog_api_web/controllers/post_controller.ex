@@ -1,7 +1,7 @@
 defmodule BlogApiWeb.PostController do
   require Logger
   use BlogApiWeb, :controller
-  alias BlogApi.{Repo, Post, Paginator}
+  alias BlogApi.{Repo, Post, Paginator, User}
   use BlogApiWeb.Controller.ErrorHandler
 	import Ecto.Query, only: [from: 2]
 
@@ -10,6 +10,17 @@ defmodule BlogApiWeb.PostController do
     # IO.inspect (param)
     with {:ok, posts} <- Post.all_by_user(user_id) do
       render(conn, "posts.json", posts: posts)
+    else
+      {:error, :nopost} ->
+        render(conn, "posts.json", posts: [])
+    end
+  end
+
+  def all_posts(conn, %{"user_id" => user_id} = param) do
+    IO.inspect (param)
+    with {:ok, posts} <- Post.all_by_user(user_id) do
+      {:ok, user} = User.by(id: user_id)
+      render(conn, "index.html", %{posts: posts, user: user.name  })
     else
       {:error, :nopost} ->
         render(conn, "posts.json", posts: [])
@@ -30,15 +41,16 @@ defmodule BlogApiWeb.PostController do
     render conn, "paginate.json", paginated: paginated_post
   end
 
-  def create(conn, %{"user_id" => _user_id,
-                     "title" => _title, "content" => _content} = param) do
+  def create(conn, %{"user_id" => _user_id, "title" => _title, "content" => _content} = param) do
 
     with {:ok, changeset} <- {:ok, Post.creation_changeset(%Post{}, param)},
          {:ok, changeset} <- Repo.validate_changeset(changeset),
-         {:ok, %Post{} = _post} <- Repo.insert(changeset) do
+         {:ok, %Post{} = post} <- Repo.insert(changeset),
+         {:ok, result } <- Post.broadcast_change(post, {:post, :created}) do
+          Logger.info "Post created, change published: "
+          Logger.debug result
           render(conn, "ok.json", msg: "post created successfully")
     else
-      # TODO: enclose below matching to function? (handle_creation_error/1 maybe?)
       error ->
         handle_creation_errors(conn, error)
     end

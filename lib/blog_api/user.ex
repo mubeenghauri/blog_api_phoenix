@@ -2,7 +2,8 @@ defmodule BlogApi.User do
   use Ecto.Schema
   require Logger
   import Ecto.Changeset
-  alias BlogApi.{User, Post}
+  alias BlogApi.{User, Post, Repo}
+	import Ecto.Query, only: [from: 2]
 
   # for password hashing, and validation.
   import Comeonin.Bcrypt, only: [hashpwsalt: 1, checkpw: 2]
@@ -88,6 +89,15 @@ defmodule BlogApi.User do
     else
       {:error, :invalid_password}
     end
+  end
+
+  def all_with_posts do
+    query = from u in User,
+            join: p in assoc(u, :posts),
+            preload: [posts: p]
+
+    query
+    |> Repo.all
   end
 
 

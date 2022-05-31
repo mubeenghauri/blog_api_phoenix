@@ -1,10 +1,11 @@
 defmodule BlogApi.Post do
   use Ecto.Schema
-  alias BlogApi.{Repo, Post, User}
+  alias BlogApi.{Repo, Post, User, Comment}
   require Logger
   import Ecto.Changeset
 	import Ecto.Query, only: [from: 2]
 
+  @topic inspect(__MODULE__)
 
   # note to self: adding the suffix 'a' gives a list of atom
   @required_creation_fields ~w(content title user_id)a
@@ -16,9 +17,19 @@ defmodule BlogApi.Post do
     field :user_id, :integer
 
     belongs_to :user, User, define_field: :false
-    has_many :comments, {"comments", Coment}, foreign_key: :post_id # the key in comments table which refrences a post
+    has_many :comments, {"comments", Comment}, foreign_key: :post_id # the key in comments table which refrences a post
 
     timestamps()
+  end
+
+  def subscribe do
+    Phoenix.PubSub.subscribe(BlogApi.PubSub, @topic)
+  end
+
+  def broadcast_change(result, event) do
+    Logger.debug @topic
+    Phoenix.PubSub.broadcast(BlogApi.PubSub, @topic, {__MODULE__, event, result})
+    {:ok, result}
   end
 
   @doc false
@@ -56,9 +67,11 @@ defmodule BlogApi.Post do
 
   def all_by_user( user_id ) do
     {user_id, _} = Integer.parse(user_id)
-    post = Repo.all( from p in "posts",
+    post = Repo.all( from p in Post,
                     where: p.user_id == ^user_id,
-                    select: [:title, :content]  )
+                    join: c in assoc(p, :comments),
+                    preload: [comments: c]
+                    )
 
     case post do
       nil ->
