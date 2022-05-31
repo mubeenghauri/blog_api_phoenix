@@ -1,9 +1,11 @@
 <section class="phx-hero">
   <p> <%= title() %> </p>
+  <p> I can do maths here too <%= 2 + 2 %>  </p>
 </section>
 
-<section class="row">
 
+<section class="row">
+  
   <div class="container">
     <table>
       <thead>
@@ -16,13 +18,11 @@
 
       <tbody>
         <%= for user <- @users do %>
-
           <tr>
             <td> <%= user.name %> </td>
             <td> <%= user.email %> </td>
             <td> <a href={Routes.path(@conn, user_post_link(user.id))}  > <%= length(user.posts) %> </a> </td>
           </tr>
-
         <% end %>
 
       </tbody>

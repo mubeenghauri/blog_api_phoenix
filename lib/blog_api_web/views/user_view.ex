@@ -1,6 +1,6 @@
 defmodule BlogApiWeb.UserView do
 
-	# use BlogApiWeb.View
+	use BlogApiWeb.View
 	use BlogApiWeb, :view
 
 	def title do
